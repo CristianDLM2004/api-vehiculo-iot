@@ -3,7 +3,7 @@ import websockets
 import json
 
 async def escuchar_demo():
-    uri = "ws://127.0.0.1:8000/api/vehiculos/1/ws"
+    uri = "ws://184.195.59.56:8000/api/vehiculos/1/ws"
     try:
         async with websockets.connect(uri) as websocket:
             print("🟢 ¡Conectado al WebSocket del Vehículo 1!")

@@ -1,0 +1,119 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Central de Control - Excavadora IoT</title>
+<link rel="stylesheet" href="style.css">
+</head>
+<body>
+<header>CENTRAL DE CONTROL - EXCAVADORA IOT <span id="wsDot" class="dot off" title="Conexión en tiempo real"></span></header>
+
+<main class="dashboard">
+  <section class="views-section">
+    <div class="cam-box top-cam">
+      <div class="cam-title"><i class="rec"></i> CAM 1: VISTA AÉREA (Rotación)</div>
+      <svg viewBox="0 0 400 300" preserveAspectRatio="xMidYMid slice">
+        <defs><pattern id="g40" width="40" height="40" patternUnits="userSpaceOnUse"><path d="M40 0H0V40" fill="none" stroke="#fff3" stroke-width="1"/></pattern><pattern id="ground" width="400" height="320" patternUnits="userSpaceOnUse"><rect width="400" height="320" fill="#4a3b2b"/><rect width="400" height="320" fill="url(#g40)"/><circle cx="70" cy="240" r="22" fill="#5c4b37"/><circle cx="335" cy="70" r="16" fill="#5c4b37"/><circle cx="220" cy="290" r="12" fill="#5c4b37"/></pattern><linearGradient id="beamT" x1="0" y1="1" x2="0" y2="0"><stop offset="0" stop-color="#fff7a8" stop-opacity=".75"/><stop offset="1" stop-color="#fff7a8" stop-opacity="0"/></linearGradient></defs>
+        <rect width="400" height="300" fill="url(#ground)"/>
+        <g id="exTopPos"><g id="exTop" style="transform-origin:200px 150px">
+          <rect x="160" y="95" width="24" height="110" rx="8" fill="#161616"/><rect x="216" y="95" width="24" height="110" rx="8" fill="#161616"/>
+          <path d="M172 102V198M228 102V198" stroke="#555" stroke-width="16" stroke-dasharray="4 5"/>
+          <g id="cabTop" style="transform-origin:200px 150px"><rect x="194" y="62" width="12" height="70" fill="#d35400"/><rect x="189" y="38" width="22" height="28" rx="5" fill="#7f8c8d"/>
+          <rect x="170" y="120" width="60" height="70" rx="8" fill="#f39c12"/><rect x="176" y="168" width="48" height="20" rx="5" fill="#d68910"/>
+          <rect x="176" y="126" width="24" height="26" rx="4" fill="#aed6f1" opacity=".9"/><path class="beam" d="M172 118L120 10H196Z" fill="url(#beamT)"/><path class="beam" d="M228 118L204 10H280Z" fill="url(#beamT)"/><circle class="lamp" cx="174" cy="121" r="5" fill="#fff6b0"/><circle class="lamp" cx="226" cy="121" r="5" fill="#fff6b0"/></g>
+        </g></g>
+        <text x="200" y="16" class="svg-lbl" text-anchor="middle">▲ NORTE</text>
+      </svg>
+    </div>
+    <div class="cam-box side-cam">
+      <div class="cam-title"><span><i class="rec"></i> CAM 2: VISTA LATERAL (Brazo y Avance)</span><span class="chips"><b id="chipLight" class="chip">💡 LUZ</b><b id="chipSound" class="chip">🔊 SONIDO</b></span></div>
+      <svg viewBox="0 0 1200 300" preserveAspectRatio="xMidYMax slice">
+        <defs><linearGradient id="sky" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#2e86c1"/><stop offset="1" stop-color="#aed6f1"/></linearGradient><linearGradient id="beamH" x1="1" y1="0" x2="0" y2="0"><stop offset="0" stop-color="#fff7a8" stop-opacity=".8"/><stop offset="1" stop-color="#fff7a8" stop-opacity="0"/></linearGradient></defs>
+        <rect width="1200" height="260" fill="url(#sky)"/>
+        <circle cx="1050" cy="70" r="34" fill="#f9e79f"/>
+        <g fill="#fff" opacity=".85"><ellipse cx="220" cy="60" rx="60" ry="16"/><ellipse cx="260" cy="48" rx="40" ry="14"/><ellipse cx="700" cy="90" rx="70" ry="16"/><ellipse cx="740" cy="78" rx="42" ry="13"/></g>
+        <path d="M0 250L120 170 230 230 360 150 520 250 700 180 860 250Z" fill="#5d6d7e" opacity=".7"/>
+        <rect y="250" width="1200" height="50" fill="#5c4b37"/><rect y="250" width="1200" height="6" fill="#6e5a43"/>
+        <path d="M880 250Q980 150 1100 250Z" fill="#7b6548"/><ellipse cx="300" cy="262" rx="14" ry="7" fill="#4a3b2b"/><ellipse cx="640" cy="270" rx="20" ry="8" fill="#4a3b2b"/>
+        <path d="M100 250v10M200 250v10M300 250v10M400 250v10M500 250v10M600 250v10M700 250v10M800 250v10M900 250v10M1000 250v10M1100 250v10" stroke="#fff5" stroke-width="2"/>
+        <g id="exSide" style="transform:translateX(400px)">
+          <ellipse cx="85" cy="252" rx="100" ry="6" fill="#0005"/>
+          <g id="armBase" class="joint" style="transform-origin:45px 175px;transform:rotate(25deg)">
+            <rect x="-60" y="167" width="105" height="16" rx="7" fill="#d35400"/>
+            <rect x="-68" y="168" width="16" height="78" rx="6" fill="#e67e22"/>
+            <g id="bucketSide" class="joint" style="transform-origin:-60px 240px">
+              <path d="M-62 232L-96 238Q-100 262-72 266L-52 252Z" fill="#7f8c8d" stroke="#566573" stroke-width="2"/>
+            </g>
+          </g>
+          <rect x="0" y="218" width="170" height="32" rx="16" fill="#222"/>
+          <g fill="#555"><circle cx="18" cy="234" r="10"/><circle cx="85" cy="234" r="10"/><circle cx="152" cy="234" r="10"/></g>
+          <rect x="20" y="206" width="130" height="14" fill="#333"/>
+          <rect x="30" y="160" width="125" height="48" rx="6" fill="#f39c12"/><rect x="118" y="163" width="46" height="45" rx="8" fill="#d68910"/>
+          <rect x="40" y="120" width="62" height="42" rx="6" fill="#f39c12"/><rect x="48" y="127" width="42" height="27" rx="3" fill="#aed6f1" opacity=".9"/>
+          <rect x="125" y="140" width="8" height="22" fill="#444"/><path class="beam" d="M34 128L-230 95V185Z" fill="url(#beamH)"/><circle class="lamp" cx="38" cy="128" r="6" fill="#fff6b0"/><rect x="86" y="112" width="14" height="8" rx="2" fill="#444"/><path class="wave" d="M106 112q8 4 0 8M112 108q12 8 0 16M120 104q16 12 0 24" fill="none" stroke="#fff" stroke-width="3" stroke-linecap="round"/>
+        </g>
+      <use href="#exSide" style="transform:translateX(-1200px)"/><use href="#exSide" style="transform:translateX(1200px)"/>
+      </svg>
+    </div>
+  </section>
+
+  <section class="controls-section">
+    <div class="panel history-panel"><h3>Historial</h3><ul id="historyList"><li>Cargando...</li></ul></div>
+
+    <div class="panel remote-panel">
+      <div class="remote-controller">
+        <div class="joy-wrap" id="joyLeftWrap"></div>
+        <div class="center-buttons">
+          <button class="rbtn" id="btnLight"><i class="led"></i><span>💡</span><small>LUCES</small></button>
+          <button class="rbtn" id="btnHorn"><i class="led"></i><span>🔊</span><small>SONIDO</small></button>
+          <button class="rbtn stop" id="btnStop"><span>⏹</span><small>PARAR</small></button>
+        </div>
+        <div class="joy-wrap" id="joyRightWrap"></div>
+      </div>
+      <div id="statusBox">ESTADO: ESPERANDO...</div>
+    </div>
+
+    <div class="panel demos-panel">
+      <h3>Gestión Demos</h3>
+      <div class="run-box">
+        <select id="demoSelect"></select>
+        <button class="btn-success" id="runBtn">▶ Ejecutar</button>
+        <button class="btn-danger" id="cancelDemoBtn" title="Cancelar la demo en curso">⏹</button>
+      </div>
+      <div class="demos-list" id="demosList"></div>
+      <button class="btn-primary" id="newDemoBtn">＋ Nueva demo</button>
+    </div>
+  </section>
+</main>
+
+<div id="demoModal" class="modal-overlay hidden">
+  <div class="modal-card">
+    <h2 id="modalTitle">Nueva demo</h2>
+    <div class="modal-body">
+      <div class="demo-info"><input id="demoName" placeholder="Nombre de la demo"><input id="demoDesc" placeholder="Descripción"></div>
+      <div class="modal-cols">
+        <div class="col-add">
+          <h4>Agregar paso</h4>
+          <label>Comando<select id="cmdSelect"></select></label>
+          <label>Duración (ms)<input type="number" id="cmdDuration" value="1000" min="100" step="100"></label>
+          <label>Pausa (ms)<input type="number" id="cmdPause" value="500" min="0" step="100"></label>
+          <button class="btn-primary" id="addStepBtn">＋ Agregar paso</button>
+        </div>
+        <div class="col-steps">
+          <h4>Secuencia <span id="stepCount"></span></h4>
+          <p class="drag-hint">⠿ Arrastra un paso para cambiar su orden, o usa ▲ ▼</p>
+          <ul id="draftSteps" class="drag-list"></ul>
+        </div>
+      </div>
+    </div>
+    <div class="modal-footer">
+      <button class="btn-secondary" id="cancelBtn">Cancelar</button>
+      <button class="btn-success" id="saveBtn">💾 Guardar demo</button>
+    </div>
+  </div>
+</div>
+
+<script src="main.js"></script>
+</body>
+</html>

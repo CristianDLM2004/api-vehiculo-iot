@@ -1,3 +1,4 @@
+#====api.py
 import asyncio
 from datetime import datetime
 from fastapi import APIRouter, HTTPException, WebSocket, WebSocketDisconnect, BackgroundTasks
@@ -56,15 +57,23 @@ def get_estado(id_vehiculo: int):
 def get_historial(id_vehiculo: int):
     return {"id_vehiculo": id_vehiculo, "historial": iot_service.obtener_historial_limitado(id_vehiculo)}
 
-@router.post("/vehiculos/{id_vehiculo}/movimientos", tags=["Estado e Historial"], status_code=201, summary="Registrar movimiento individual")
-async def registrar_movimiento(id_vehiculo: int, mov: MovimientoPost):
-    if id_vehiculo != mov.id_vehiculo: raise HTTPException(400, "ID no coincide")
-    try:
-        res = iot_service.registrar_movimiento_individual(id_vehiculo, mov.id_comando, mov.conectado, mov.origen)
-        await ws_manager.broadcast(id_vehiculo, {"evento": "MOV_INDIVIDUAL", "id_comando": mov.id_comando, "origen": mov.origen})
-        return res
-    except Exception as e: raise HTTPException(500, str(e))
+comandos_cache = {}   # ids válidos por vehículo, para no ir a la BD en cada orden
 
+def _cargar_comandos(id_vehiculo):
+    comandos_cache[id_vehiculo] = {c['id_comando'] for c in iot_service.obtener_comandos_vehiculo(id_vehiculo)}
+
+@router.post("/vehiculos/{id_vehiculo}/movimientos", tags=["Estado e Historial"], status_code=201, summary="Registrar movimiento individual")
+async def registrar_movimiento(id_vehiculo: int, mov: MovimientoPost, bg_tasks: BackgroundTasks):
+    if id_vehiculo != mov.id_vehiculo: raise HTTPException(400, "ID no coincide")
+    if id_vehiculo not in comandos_cache:
+        await asyncio.to_thread(_cargar_comandos, id_vehiculo)
+    if mov.id_comando not in comandos_cache[id_vehiculo]:
+        raise HTTPException(400, f"Comando {mov.id_comando} inválido para el vehículo {id_vehiculo}")
+    # 1) primero a la ESP y a las páginas (sin esperar a la BD)
+    await ws_manager.broadcast(id_vehiculo, {"evento": "MOV_INDIVIDUAL", "id_comando": mov.id_comando, "origen": mov.origen})
+    # 2) estado e historial se guardan después, en segundo plano
+    bg_tasks.add_task(iot_service.registrar_movimiento_individual, id_vehiculo, mov.id_comando, mov.conectado, mov.origen)
+    return {"status": "success", "mensaje": "Movimiento enviado"}
 # ==================== DEMOS Y MOVIMIENTOS ====================
 @router.get("/vehiculos/{id_vehiculo}/demos", tags=["Demos"], summary="Ver demos del vehículo")
 def get_demos(id_vehiculo: int):

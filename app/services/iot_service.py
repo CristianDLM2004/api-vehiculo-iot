@@ -1,3 +1,4 @@
+#iot_service.py
 from app.database import Database
 
 class IoTService:
@@ -6,7 +7,8 @@ class IoTService:
 
     def _ejecutar_sp(self, sp_name: str, params: tuple = (), fetch: str = "none"):
         """Método auxiliar interno para ejecutar Stored Procedures sin repetir código."""
-        conn = self.db.get_connection()
+        db = Database()          # conexión propia por llamada
+        conn = db.get_connection()
         if not conn:
             raise Exception("Error de conexión a la base de datos")
         
@@ -14,27 +16,27 @@ class IoTService:
         try:
             cursor.callproc(sp_name, params)
             
-            # 1. Leer los resultados primero
             resultado = None
-            if fetch == "all":
-                for res in cursor.stored_results():
+            # Iterar SIEMPRE para vaciar el búfer de MySQL y evitar "Commands out of sync"
+            for res in cursor.stored_results():
+                if fetch == "all" and resultado is None:
                     resultado = res.fetchall()
-            elif fetch == "one":
-                for res in cursor.stored_results():
+                elif fetch == "one" and resultado is None:
                     resultado = res.fetchone()
-            else:
+                else:
+                    res.fetchall() # Lectura de limpieza
+            
+            if fetch == "none":
                 resultado = {"status": "success", "mensaje": f"Procedimiento {sp_name} ejecutado."}
             
-            # 2. CONFIRMAR LA TRANSACCIÓN (El paso que faltaba para guardar los Inserts)
             conn.commit()
-            
             return resultado
         except Exception as e:
             conn.rollback()
             raise e
         finally:
             cursor.close()
-            self.db.close()
+            db.close() 
 
     # --- VEHICULOS ---
     def crear_vehiculo(self, nombre: str, modelo: str, desc: str, micro: str):
