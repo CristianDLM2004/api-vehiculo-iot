@@ -2,20 +2,17 @@
 from app.database import Database
 
 class IoTService:
-    def __init__(self):
-        self.db = Database()
-
     def _ejecutar_sp(self, sp_name: str, params: tuple = (), fetch: str = "none"):
-        """Método auxiliar interno para ejecutar Stored Procedures sin repetir código."""
-        db = Database()          # conexión propia por llamada
+        """Ejecuta un Stored Procedure con una conexión PROPIA (segura entre hilos)."""
+        db = Database()
         conn = db.get_connection()
         if not conn:
             raise Exception("Error de conexión a la base de datos")
-        
+
         cursor = conn.cursor(dictionary=True)
         try:
             cursor.callproc(sp_name, params)
-            
+
             resultado = None
             # Iterar SIEMPRE para vaciar el búfer de MySQL y evitar "Commands out of sync"
             for res in cursor.stored_results():
@@ -24,19 +21,19 @@ class IoTService:
                 elif fetch == "one" and resultado is None:
                     resultado = res.fetchone()
                 else:
-                    res.fetchall() # Lectura de limpieza
-            
+                    res.fetchall()  # Lectura de limpieza
+
             if fetch == "none":
                 resultado = {"status": "success", "mensaje": f"Procedimiento {sp_name} ejecutado."}
-            
+
             conn.commit()
             return resultado
-        except Exception as e:
+        except Exception:
             conn.rollback()
-            raise e
+            raise
         finally:
             cursor.close()
-            db.close() 
+            db.close()
 
     # --- VEHICULOS ---
     def crear_vehiculo(self, nombre: str, modelo: str, desc: str, micro: str):
@@ -72,26 +69,23 @@ class IoTService:
         return self._ejecutar_sp('sp_obtener_estado', (id_vehiculo,), fetch="one")
 
     def registrar_movimiento_individual(self, id_vehiculo: int, id_comando: int, conectado: bool, origen: str):
-        conn = self.db.get_connection()
+        """Guarda estado + historial. La validación del comando ya la hace la API (caché)."""
+        db = Database()
+        conn = db.get_connection()
+        if not conn:
+            raise Exception("Error de conexión a la base de datos")
         cursor = conn.cursor(dictionary=True)
         try:
-            cursor.callproc('sp_obtener_comandos_vehiculo', (id_vehiculo,))
-            comandos = []
-            for result in cursor.stored_results():
-                comandos = result.fetchall()
-            if not any(c['id_comando'] == id_comando for c in comandos):
-                raise ValueError(f"Comando {id_comando} inválido para vehículo {id_vehiculo}.")
-
             cursor.callproc('sp_actualizar_estado', (id_vehiculo, id_comando, conectado))
             cursor.callproc('sp_registrar_historial', (id_vehiculo, id_comando, origen))
             conn.commit()
             return {"status": "success", "mensaje": "Movimiento registrado y estado actualizado"}
-        except Exception as e:
+        except Exception:
             conn.rollback()
-            raise e
+            raise
         finally:
             cursor.close()
-            self.db.close()
+            db.close()
 
     def actualizar_solo_estado(self, id_vehiculo: int, id_comando: int):
         return self._ejecutar_sp('sp_actualizar_estado', (id_vehiculo, id_comando, True))

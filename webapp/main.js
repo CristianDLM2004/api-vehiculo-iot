@@ -353,6 +353,7 @@ async function deleteDemo(id) {
 
 // Inicialización (en serie para no saturar la conexión a MySQL al cargar)
 (async () => {
+    setLight(true); setSound(true);   // el carro arranca con luz y sonido encendidos
     render();
     requestAnimationFrame(tick);
     connectWebSocket();

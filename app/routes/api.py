@@ -125,15 +125,18 @@ async def websocket_endpoint(websocket: WebSocket, id_vehiculo: int):
     except WebSocketDisconnect: ws_manager.disconnect(websocket, id_vehiculo)
 
 async def ejecutar_secuencia_demo(id_vehiculo: int, id_demo: int):
-    movs = iot_service.obtener_movimientos_demo(id_demo)
+    movs = await asyncio.to_thread(iot_service.obtener_movimientos_demo, id_demo)   # antes: sin to_thread
     if not movs: return
     demos_activas[id_vehiculo] = False
     await ws_manager.broadcast(id_vehiculo, {"evento": "INICIO_DEMO", "total": len(movs)})
     for mov in movs:
         if demos_activas.get(id_vehiculo): break
-        iot_service.actualizar_solo_estado(id_vehiculo, mov['id_comando'])
+        # primero a la ESP...
         await ws_manager.broadcast(id_vehiculo, {"evento": "MOV_DEMO", "comando": mov['comando'], "duracion_ms": mov['duracion_ms'], "pausa_ms": mov['pausa_ms']})
+        # ...y el estado en la BD después, sin bloquear
+        asyncio.create_task(asyncio.to_thread(iot_service.actualizar_solo_estado, id_vehiculo, mov['id_comando']))
         await asyncio.sleep((mov['duracion_ms'] + mov['pausa_ms']) / 1000.0)
+    # (el resto de la función queda igual)
     if not demos_activas.get(id_vehiculo): await ws_manager.broadcast(id_vehiculo, {"evento": "FIN_DEMO"})
     demos_activas.pop(id_vehiculo, None)
 
